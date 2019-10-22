@@ -1,0 +1,55 @@
+version: "3"
+
+services:
+    willorders:
+        build: .
+        restart: unless-stopped
+        depends_on:
+            - db
+            - willstores
+        ports:
+            - "8000:8000"
+        environment:
+            - TZ=Asia/Tokyo
+            - FLASK_APP=backend-test.py
+            - FLASK_ENV=test
+            - DATABASE_URL=postgresql://user:test@db/willorders
+            - ACCESS_TOKEN=TOKEN
+            - WILLSTORES_WS=http://willstores:8001
+        command: flask run --host 0.0.0.0 --port 8000
+
+    db:
+        image: postgres
+        restart: always
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_USER: user
+            POSTGRES_PASSWORD: test
+            POSTGRES_DB: willorders
+
+    willstores:
+        build: 
+            context: ./webservices/willstores
+        restart: unless-stopped
+        depends_on:
+            - es
+        ports:
+            - "8001:8001"
+        environment:
+            - TZ=Asia/Tokyo
+            - FLASK_APP=backend-test.py
+            - FLASK_ENV=test
+            - ES_URL=http://es:9200
+            - ACCESS_TOKEN=TOKEN
+        command: flask run --host 0.0.0.0 --port 8001
+
+    es:
+        image: elasticsearch:5.4.3
+        ports:
+            - "9200:9200"
+            - "9300:9300"
+        environment:
+            - discovery.type=single-node
+            - cluster.name=willbuyer-cluster
+            - ES_JAVA_OPTS=-Xms512m -Xmx512m
