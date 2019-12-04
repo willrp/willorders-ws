@@ -3,7 +3,7 @@ from flask import json
 from uuid import uuid4
 
 from backend.model import Order, Product, OrderProduct
-from backend.tests.factories import OrderFactory, ProductFactory
+from backend.tests.factories import OrderFactory, ProductFactory, OrderProductFactory
 from backend.util.response.error import ErrorSchema
 from backend.util.slug import uuid_to_slug
 
@@ -12,6 +12,7 @@ from backend.util.slug import uuid_to_slug
 def factory_session(db_perm_session):
     OrderFactory._meta.sqlalchemy_session = db_perm_session
     ProductFactory._meta.sqlalchemy_session = db_perm_session
+    OrderProductFactory._meta.sqlalchemy_session = db_perm_session
 
 
 def test_delete_controller(token_app, db_perm_session, prod_list):
@@ -24,7 +25,7 @@ def test_delete_controller(token_app, db_perm_session, prod_list):
 
     for es_id in prod_id_list:
         product = ProductFactory.create(es_id=es_id)
-        OrderProduct(order=obj, product=product, amount=2)
+        OrderProductFactory.create(order=obj, product=product, amount=2)
 
     db_perm_session.commit()
 

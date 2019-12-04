@@ -1,17 +1,9 @@
-import pytest
 from flask import json
 from uuid import uuid4
 
 from backend.model import Order, Product, OrderProduct
-from backend.tests.factories import OrderFactory, ProductFactory
 from backend.util.response.error import ErrorSchema
 from backend.util.slug import uuid_to_slug
-
-
-@pytest.fixture(scope="function", autouse=True)
-def factory_session(db_perm_session):
-    OrderFactory._meta.sqlalchemy_session = db_perm_session
-    ProductFactory._meta.sqlalchemy_session = db_perm_session
 
 
 def test_insert_controller(token_app, db_perm_session, prod_list):
