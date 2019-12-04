@@ -4,8 +4,7 @@ from uuid import uuid4
 from datetime import date, timedelta
 from json import JSONDecodeError
 
-from backend.model import OrderProduct
-from backend.tests.factories import OrderFactory, ProductFactory
+from backend.tests.factories import OrderFactory, ProductFactory, OrderProductFactory
 from backend.util.response.user_orders import UserOrdersSchema
 from backend.util.response.error import ErrorSchema
 from backend.util.slug import uuid_to_slug
@@ -15,6 +14,7 @@ from backend.util.slug import uuid_to_slug
 def factory_session(db_perm_session):
     OrderFactory._meta.sqlalchemy_session = db_perm_session
     ProductFactory._meta.sqlalchemy_session = db_perm_session
+    OrderProductFactory._meta.sqlalchemy_session = db_perm_session
 
 
 def test_select_by_user_controller(token_app, db_perm_session, prod_list):
@@ -26,10 +26,10 @@ def test_select_by_user_controller(token_app, db_perm_session, prod_list):
     obj_list = OrderFactory.create_batch(2, user_slug=user_slug)
 
     for product in product_list:
-        OrderProduct(order=obj_list[0], product=product, amount=2)
+        OrderProductFactory.create(order=obj_list[0], product=product, amount=2)
 
     for product in product_list[0:3]:
-        OrderProduct(order=obj_list[1], product=product, amount=5)
+        OrderProductFactory.create(order=obj_list[1], product=product, amount=5)
 
     db_perm_session.commit()
 
@@ -112,7 +112,7 @@ def test_select_by_user_controller_not_registered(token_app, db_perm_session):
     bad_product = ProductFactory.create()
 
     for order in bad_obj_list:
-        OrderProduct(order=order, product=bad_product, amount=5)
+        OrderProductFactory.create(order=order, product=bad_product, amount=5)
 
     db_perm_session.commit()
 
