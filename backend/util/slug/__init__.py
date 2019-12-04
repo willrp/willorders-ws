@@ -4,7 +4,7 @@ import base64
 import binascii
 import uuid
 
-from backend.errors.request_error import SlugDecodeError
+from ...errors.request_error import SlugDecodeError
 
 
 def uuid_to_slug(uuid_: uuid.UUID) -> str:
