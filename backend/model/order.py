@@ -4,8 +4,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 from uuid import uuid4
 
-from backend.dao.postgres_db import Base
-from backend.util.slug import uuid_to_slug, slug_to_uuid
+from ..dao.postgres_db import Base
+from ..util.slug import uuid_to_slug, slug_to_uuid
 
 
 class Order(Base):
