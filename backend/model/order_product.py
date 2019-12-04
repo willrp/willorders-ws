@@ -1,7 +1,7 @@
 from sqlalchemy import Column, BigInteger, Integer, ForeignKey
 from sqlalchemy.orm import relationship, backref
 
-from backend.dao.postgres_db import Base
+from ..dao.postgres_db import Base
 from .order import Order
 from .product import Product
 

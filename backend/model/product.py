@@ -3,7 +3,7 @@ from sqlalchemy import Column, BigInteger, String, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from uuid import uuid4
 
-from backend.dao.postgres_db import Base
+from ..dao.postgres_db import Base
 
 
 class Product(Base):
