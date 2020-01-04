@@ -93,15 +93,15 @@ def test_order_service_insert(service):
 
 
 def test_order_service_delete(service):
-    service.db_session.query().filter().delete.return_value = True
-    result = service.delete(slug="WILLrogerPEREIRAslugBR")
+    service.db_session.query().filter().filter().delete.return_value = True
+    result = service.delete(user_slug="WILLrogerPEREIRAslugBR", order_slug="WILLrogerPEREIRAslugBR")
     assert result is True
 
-    service.db_session.query().filter().delete.return_value = False
+    service.db_session.query().filter().filter().delete.return_value = False
     with pytest.raises(NotFoundError):
-        service.delete(slug="WILLrogerPEREIRAslugBR")
+        service.delete(user_slug="WILLrogerPEREIRAslugBR", order_slug="WILLrogerPEREIRAslugBR")
 
-    service.db_session.query().filter().delete.side_effect = DatabaseError("statement", "params", "DETAIL:  orig\n"),
+    service.db_session.query().filter().filter().delete.side_effect = DatabaseError("statement", "params", "DETAIL:  orig\n"),
 
     with pytest.raises(DatabaseError):
-        service.delete(slug="WILLrogerPEREIRAslugBR")
+        service.delete(user_slug="WILLrogerPEREIRAslugBR", order_slug="WILLrogerPEREIRAslugBR")

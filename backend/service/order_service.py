@@ -67,10 +67,11 @@ class OrderService(object):
             self.db_session.rollback()
             raise
 
-    def delete(self, slug: str) -> bool:
+    def delete(self, user_slug: str, order_slug: str) -> bool:
         try:
-            uuid = slug_to_uuid(slug)
-            result = self.db_session.query(Order).filter(Order.uuid == uuid).delete()
+            user_uuid = slug_to_uuid(user_slug)
+            uuid = slug_to_uuid(order_slug)
+            result = self.db_session.query(Order).filter(Order.user_uuid == user_uuid).filter(Order.uuid == uuid).delete()
             self.db_session.commit()
             if result == 0:
                 raise NotFoundError()
