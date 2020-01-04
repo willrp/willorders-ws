@@ -15,7 +15,7 @@ RESPONSEMODEL = OrderResponse.get_model(selectBySlugNS, "OrderResponse")
 ERRORMODEL = ErrorResponse.get_model(selectBySlugNS, "ErrorResponse")
 
 
-@selectBySlugNS.route("/<string:slug>", strict_slashes=False)
+@selectBySlugNS.route("/<string:user_slug>/<string:order_slug>", strict_slashes=False)
 class SelectBySlugController(Resource):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -23,7 +23,8 @@ class SelectBySlugController(Resource):
 
     @auth_required()
     @selectBySlugNS.doc(security=["token"])
-    @selectBySlugNS.param("slug", description="Order slug", _in="path", required=True)
+    @selectBySlugNS.param("user_slug", description="User slug", _in="path", required=True)
+    @selectBySlugNS.param("order_slug", description="Order slug", _in="path", required=True)
     @selectBySlugNS.response(200, "Success", RESPONSEMODEL)
     @selectBySlugNS.response(400, "Bad Request", ERRORMODEL)
     @selectBySlugNS.response(401, "Unauthorized", ERRORMODEL)
@@ -31,10 +32,10 @@ class SelectBySlugController(Resource):
     @selectBySlugNS.response(500, "Unexpected Error", ERRORMODEL)
     @selectBySlugNS.response(502, "Error while accessing the gateway server", ERRORMODEL)
     @selectBySlugNS.response(504, "No response from gateway server", ERRORMODEL)
-    def get(self, slug):
+    def get(self, user_slug, order_slug):
         """Order information."""
         try:
-            order = self.__orderservice.select_by_slug(slug=slug)
+            order = self.__orderservice.select_by_slug(user_slug=user_slug, order_slug=order_slug)
             items_list = [item.to_dict() for item in order.items]
             items_info = {"item_list": items_list}
 

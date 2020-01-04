@@ -15,9 +15,10 @@ class OrderService(object):
     def __init__(self):
         self.db_session = DBSession()
 
-    def select_by_slug(self, slug: str) -> Order:
-        uuid = slug_to_uuid(slug)
-        result = self.db_session.query(Order).filter(Order.uuid == uuid).one_or_none()
+    def select_by_slug(self, user_slug: str, order_slug: str) -> Order:
+        user_uuid = slug_to_uuid(user_slug)
+        uuid = slug_to_uuid(order_slug)
+        result = self.db_session.query(Order).filter(Order.user_uuid == user_uuid).filter(Order.uuid == uuid).one_or_none()
 
         if result is None:
             raise NotFoundError()

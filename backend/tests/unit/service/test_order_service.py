@@ -21,15 +21,15 @@ def service():
 
 
 def test_order_service_select_by_slug(service):
-    service.db_session.query().filter().one_or_none.return_value = MagicMock(autospec=True)
-    service.select_by_slug(slug="WILLrogerPEREIRAslugBR")
+    service.db_session.query().filter().filter().one_or_none.return_value = MagicMock(autospec=True)
+    service.select_by_slug(user_slug="WILLrogerPEREIRAslugBR", order_slug="WILLrogerPEREIRAslugBR")
 
-    service.db_session.query().filter().one_or_none.return_value = None
+    service.db_session.query().filter().filter().one_or_none.return_value = None
     with pytest.raises(NotFoundError):
-        service.select_by_slug(slug="WILLrogerPEREIRAslugBR")
+        service.select_by_slug(user_slug="WILLrogerPEREIRAslugBR", order_slug="WILLrogerPEREIRAslugBR")
 
     with pytest.raises(SlugDecodeError):
-        service.select_by_slug(slug="churros")
+        service.select_by_slug(user_slug="churros", order_slug="churros")
 
 
 def test_order_service_select_by_user_slug(service):
