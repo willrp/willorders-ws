@@ -31,7 +31,6 @@ def request_json():
 def response_json():
     return {
         "slug": "slug",
-        "user_slug": "user_slug",
         "product_types": 0,
         "items_amount": 0,
         "updated_at": "2019-10-12T00:00:00.000Z"
@@ -78,7 +77,6 @@ def test_select_by_user_slug_controller(mocker, login_disabled_app, willstores_w
 
             for order in data["orders"]:
                 assert order["slug"] == "slug"
-                assert order["user_slug"] == "user_slug"
                 assert order["product_types"] == 0
                 assert order["items_amount"] == 0
                 assert order["total"]["outlet"] == 10.55
@@ -107,7 +105,6 @@ def test_select_by_user_slug_controller(mocker, login_disabled_app, willstores_w
 
             for order in data["orders"]:
                 assert order["slug"] == "slug"
-                assert order["user_slug"] == "user_slug"
                 assert order["product_types"] == 0
                 assert order["items_amount"] == 0
                 assert order["total"]["outlet"] == 10.55

@@ -49,10 +49,6 @@ def test_select_by_user_controller(token_app, db_perm_session, prod_list):
     for slug in order_slug_list:
         assert slug in [obj.uuid_slug for obj in obj_list]
 
-    user_slug_list = [order["user_slug"] for order in data["orders"]]
-    for slug in user_slug_list:
-        assert slug == user_slug
-
     for order in data["orders"]:
         if order["slug"] == obj_list[0].uuid_slug:
             assert order["product_types"] == 5
