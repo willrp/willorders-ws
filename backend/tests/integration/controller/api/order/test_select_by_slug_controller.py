@@ -20,7 +20,7 @@ def test_select_by_slug_controller(token_app, db_perm_session, prod_list):
     obj = OrderFactory.create(user_slug=user_slug)
     db_perm_session.commit()
 
-    slug = obj.uuid_slug
+    order_slug = obj.uuid_slug
     prod_id_list = [p.meta["id"] for p in prod_list]
 
     amount = 1
@@ -33,13 +33,13 @@ def test_select_by_slug_controller(token_app, db_perm_session, prod_list):
 
     with token_app.test_client() as client:
         response = client.get(
-            "api/order/%s" % slug
+            "api/order/%s/%s" % (user_slug, order_slug)
         )
 
     data = json.loads(response.data)
     OrderSchema().load(data)
     assert response.status_code == 200
-    assert data["slug"] == slug
+    assert data["slug"] == order_slug
     assert data["user_slug"] == user_slug
     assert data["product_types"] == len(prod_list)
     assert data["items_amount"] == ((1 + len(prod_list)) * len(prod_list)) / 2
@@ -51,7 +51,16 @@ def test_select_by_slug_controller(token_app, db_perm_session, prod_list):
 
     with token_app.test_client() as client:
         response = client.get(
-            "api/order/WILLrogerPEREIRAslugBR"
+            "api/order/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR"
+        )
+
+    data = json.loads(response.data)
+    assert data == {}
+    assert response.status_code == 404
+
+    with token_app.test_client() as client:
+        response = client.get(
+            "api/order/WILLrogerPEREIRAslugBR/%s" % order_slug
         )
 
     data = json.loads(response.data)
@@ -62,7 +71,7 @@ def test_select_by_slug_controller(token_app, db_perm_session, prod_list):
 def test_select_by_slug_controller_unauthorized(flask_app):
     with flask_app.test_client() as client:
         response = client.get(
-            "api/order/WILLrogerPEREIRAslugBR",
+            "api/order/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR"
         )
 
     data = json.loads(response.data)

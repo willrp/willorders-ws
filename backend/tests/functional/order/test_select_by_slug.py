@@ -20,7 +20,7 @@ def test_select_by_slug(domain_url, db_perm_session, token_session, prod_list):
     obj = OrderFactory.create(user_slug=user_slug)
     db_perm_session.commit()
 
-    slug = obj.uuid_slug
+    order_slug = obj.uuid_slug
     prod_id_list = [p.meta["id"] for p in prod_list]
 
     amount = 1
@@ -32,13 +32,13 @@ def test_select_by_slug(domain_url, db_perm_session, token_session, prod_list):
     db_perm_session.commit()
 
     response = token_session.get(
-        domain_url + "/api/order/%s" % slug
+        domain_url + "/api/order/%s/%s" % (user_slug, order_slug)
     )
 
     data = response.json()
     OrderSchema().load(data)
     assert response.status_code == 200
-    assert data["slug"] == slug
+    assert data["slug"] == order_slug
     assert data["user_slug"] == user_slug
     assert data["product_types"] == len(prod_list)
     assert data["items_amount"] == ((1 + len(prod_list)) * len(prod_list)) / 2
@@ -49,7 +49,15 @@ def test_select_by_slug(domain_url, db_perm_session, token_session, prod_list):
         assert product["amount"] == item["amount"]
 
     response = token_session.get(
-        domain_url + "/api/order/WILLrogerPEREIRAslugBR"
+        domain_url + "/api/order/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR"
+    )
+
+    data = response.json()
+    assert data == {}
+    assert response.status_code == 404
+
+    response = token_session.get(
+        domain_url + "/api/order/WILLrogerPEREIRAslugBR/%s" % order_slug
     )
 
     data = response.json()
@@ -59,7 +67,7 @@ def test_select_by_slug(domain_url, db_perm_session, token_session, prod_list):
 
 def test_select_by_slug_unauthorized(domain_url):
     response = requests.get(
-        domain_url + "/api/order/WILLrogerPEREIRAslugBR",
+        domain_url + "/api/order/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR"
     )
 
     data = response.json()

@@ -24,16 +24,24 @@ def service():
 
 
 def test_order_service_select_by_slug(service, db_perm_session):
+    user_slug = uuid_to_slug(uuid4())
+    order_slug = uuid_to_slug(uuid4())
+
     with pytest.raises(NotFoundError):
-        service.select_by_slug(slug="WILLrogerPEREIRAslugBR")
+        service.select_by_slug(user_slug=user_slug, order_slug=order_slug)
 
     obj = OrderFactory.create()
     db_perm_session.commit()
 
-    slug = obj.uuid_slug
-
-    result = service.select_by_slug(slug=slug)
+    order_slug = obj.uuid_slug
+    user_slug = obj.user_slug
+    result = service.select_by_slug(user_slug=user_slug, order_slug=order_slug)
     assert type(result) is Order
+
+    user_slug = uuid_to_slug(uuid4())
+
+    with pytest.raises(NotFoundError):
+        service.select_by_slug(user_slug=user_slug, order_slug=order_slug)
 
 
 def test_order_service_select_by_user_slug(service, db_perm_session):

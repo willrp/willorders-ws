@@ -17,7 +17,7 @@ def test_basic_api_wrong_method(flask_app):
 def test_basic_wrong_method(flask_app):
     with flask_app.test_client() as client:
         response = client.patch(
-            "/api/order/123"
+            "/api/order/123/123"
         )
 
     assert response.data.decode("utf-8").find("{}") != -1

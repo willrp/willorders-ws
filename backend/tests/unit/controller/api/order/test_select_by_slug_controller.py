@@ -68,7 +68,7 @@ def test_select_by_slug_controller(mocker, login_disabled_app, willstores_ws, re
 
             with login_disabled_app.test_client() as client:
                 response = client.get(
-                    "api/order/WILLrogerPEREIRAslugBR"
+                    "api/order/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR"
                 )
 
             data = json.loads(response.data)
@@ -84,7 +84,17 @@ def test_select_by_slug_controller(mocker, login_disabled_app, willstores_ws, re
 def test_select_by_slug_controller_invalid_slug(login_disabled_app):
     with login_disabled_app.test_client() as client:
         response = client.get(
-            "api/order/invalidslug"
+            "api/order/invalidslug/WILLrogerPEREIRAslugBR"
+        )
+
+    data = json.loads(response.data)
+    ErrorSchema().load(data)
+
+    assert response.status_code == 400
+
+    with login_disabled_app.test_client() as client:
+        response = client.get(
+            "api/order/WILLrogerPEREIRAslugBR/invalidslug"
         )
 
     data = json.loads(response.data)
@@ -96,12 +106,12 @@ def test_select_by_slug_controller_invalid_slug(login_disabled_app):
 @pytest.mark.parametrize(
     "method,http_method,test_url,error,status_code",
     [
-        ("select_by_slug", "GET", "api/order/WILLrogerPEREIRAslugBR", HTTPException(), 400),
-        ("select_by_slug", "GET", "api/order/WILLrogerPEREIRAslugBR", NotFoundError(), 404),
-        ("select_by_slug", "GET", "api/order/WILLrogerPEREIRAslugBR", ConnectionError(), 502),
-        ("select_by_slug", "GET", "api/order/WILLrogerPEREIRAslugBR", DatabaseError("statement", "params", "orig"), 400),
-        ("select_by_slug", "GET", "api/order/WILLrogerPEREIRAslugBR", SQLAlchemyError(), 504),
-        ("select_by_slug", "GET", "api/order/WILLrogerPEREIRAslugBR", Exception(), 500)
+        ("select_by_slug", "GET", "api/order/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR", HTTPException(), 400),
+        ("select_by_slug", "GET", "api/order/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR", NotFoundError(), 404),
+        ("select_by_slug", "GET", "api/order/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR", ConnectionError(), 502),
+        ("select_by_slug", "GET", "api/order/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR", DatabaseError("statement", "params", "orig"), 400),
+        ("select_by_slug", "GET", "api/order/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR", SQLAlchemyError(), 504),
+        ("select_by_slug", "GET", "api/order/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR", Exception(), 500)
     ]
 )
 def test_select_by_slug_controller_error(mocker, get_request_function, method, http_method, test_url, error, status_code):
@@ -125,11 +135,11 @@ def test_select_by_slug_controller_error(mocker, get_request_function, method, h
 @pytest.mark.parametrize(
     "test_url, status_code",
     [
-        ("api/order/WILLrogerPEREIRAslugBR", 400),
-        ("api/order/WILLrogerPEREIRAslugBR", 401),
-        ("api/order/WILLrogerPEREIRAslugBR", 500),
-        ("api/order/WILLrogerPEREIRAslugBR", 502),
-        ("api/order/WILLrogerPEREIRAslugBR", 504),
+        ("api/order/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR", 400),
+        ("api/order/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR", 401),
+        ("api/order/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR", 500),
+        ("api/order/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR", 502),
+        ("api/order/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR", 504),
     ]
 )
 def test_select_by_slug_controller_http_error(mocker, login_disabled_app, willstores_ws, json_error_recv, test_url, status_code):
