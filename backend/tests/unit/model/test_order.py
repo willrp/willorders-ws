@@ -126,10 +126,10 @@ def test_order_dict(db_session):
     obj = OrderFactory.create()
     db_session.commit()
     obj_dict = obj.to_dict()
-    for key in ["slug", "user_slug", "created_at", "updated_at", "product_types", "items_amount"]:
+    for key in ["slug", "created_at", "updated_at", "product_types", "items_amount"]:
         assert key in obj_dict
 
-    assert len(obj_dict.keys()) == 6
+    assert len(obj_dict.keys()) == 5
     assert obj_dict["product_types"] == 0
     assert obj_dict["items_amount"] == 0
 

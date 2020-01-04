@@ -17,7 +17,6 @@ from sqlalchemy.exc import DatabaseError, SQLAlchemyError
 def response_json():
     return {
         "slug": "slug",
-        "user_slug": "user_slug",
         "product_types": 0,
         "items_amount": 0,
         "total": {
@@ -76,7 +75,6 @@ def test_select_by_slug_controller(mocker, login_disabled_app, willstores_ws, re
         OrderSchema().load(data)
         assert response.status_code == 200
         assert data["slug"] == "slug"
-        assert data["user_slug"] == "user_slug"
         assert data["product_types"] == 0
         assert data["items_amount"] == 0
         assert len(data["products"]) == 1

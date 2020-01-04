@@ -33,7 +33,6 @@ class Order(Base):
     def to_dict(self) -> dict:
         return {
             "slug": self.uuid_slug,
-            "user_slug": self.user_slug,
             "created_at": str(self.created_at),
             "updated_at": str(self.updated_at),
             "product_types": len(self.items),
