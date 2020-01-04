@@ -40,7 +40,6 @@ def test_select_by_slug_controller(token_app, db_perm_session, prod_list):
     OrderSchema().load(data)
     assert response.status_code == 200
     assert data["slug"] == order_slug
-    assert data["user_slug"] == user_slug
     assert data["product_types"] == len(prod_list)
     assert data["items_amount"] == ((1 + len(prod_list)) * len(prod_list)) / 2
     assert len(data["products"]) == len(prod_list)
