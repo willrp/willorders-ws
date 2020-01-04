@@ -164,7 +164,7 @@ def test_order_service_delete(service, db_perm_session):
     assert len(db_perm_session.query(Order).all()) == 0
 
     with pytest.raises(NotFoundError):
-        service.delete(slug="WILLrogerPEREIRAslugBR")
+        service.delete(user_slug="WILLrogerPEREIRAslugBR", order_slug="WILLrogerPEREIRAslugBR")
 
     user_slug = uuid_to_slug(uuid4())
     obj = OrderFactory.create(user_slug=user_slug)
@@ -181,7 +181,16 @@ def test_order_service_delete(service, db_perm_session):
     assert len(db_perm_session.query(Product).all()) == 5
     assert len(db_perm_session.query(OrderProduct).all()) == 5
 
-    delete = service.delete(slug=obj.uuid_slug)
+    fake_user_slug = uuid_to_slug(uuid4())
+
+    with pytest.raises(NotFoundError):
+        service.delete(user_slug=fake_user_slug, order_slug=obj.uuid_slug)
+
+    assert len(db_perm_session.query(Order).all()) == 1
+    assert len(db_perm_session.query(Product).all()) == 5
+    assert len(db_perm_session.query(OrderProduct).all()) == 5
+
+    delete = service.delete(user_slug=user_slug, order_slug=obj.uuid_slug)
 
     assert delete is True
 

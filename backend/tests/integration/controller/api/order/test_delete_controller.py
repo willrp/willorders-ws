@@ -20,7 +20,7 @@ def test_delete_controller(token_app, db_perm_session, prod_list):
     obj = OrderFactory.create(user_slug=user_slug)
     db_perm_session.commit()
 
-    slug = obj.uuid_slug
+    order_slug = obj.uuid_slug
     prod_id_list = [p.meta["id"] for p in prod_list]
 
     for es_id in prod_id_list:
@@ -33,9 +33,23 @@ def test_delete_controller(token_app, db_perm_session, prod_list):
     assert len(db_perm_session.query(Product).all()) == 5
     assert len(db_perm_session.query(OrderProduct).all()) == 5
 
+    fake_user_slug = uuid_to_slug(uuid4())
+
     with token_app.test_client() as client:
         response = client.delete(
-            "api/order/delete/%s" % slug
+            "api/order/delete/%s/%s" % (fake_user_slug, order_slug)
+        )
+
+    data = json.loads(response.data)
+    assert data == {}
+    assert response.status_code == 404
+    assert len(db_perm_session.query(Order).all()) == 1
+    assert len(db_perm_session.query(Product).all()) == 5
+    assert len(db_perm_session.query(OrderProduct).all()) == 5
+
+    with token_app.test_client() as client:
+        response = client.delete(
+            "api/order/delete/%s/%s" % (user_slug, order_slug)
         )
 
     data = json.loads(response.data)
@@ -47,7 +61,7 @@ def test_delete_controller(token_app, db_perm_session, prod_list):
 
     with token_app.test_client() as client:
         response = client.delete(
-            "api/order/delete/%s" % slug
+            "api/order/delete/%s/%s" % (user_slug, order_slug)
         )
 
     data = json.loads(response.data)
@@ -61,7 +75,7 @@ def test_delete_controller(token_app, db_perm_session, prod_list):
 def test_delete_controller_unauthorized(flask_app):
     with flask_app.test_client() as client:
         response = client.delete(
-            "api/order/delete/WILLrogerPEREIRAslugBR",
+            "api/order/delete/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR",
         )
 
     data = json.loads(response.data)

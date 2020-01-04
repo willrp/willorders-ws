@@ -41,22 +41,23 @@ def controller_mocker(mocker):
 
 
 def test_insert_controller(mocker, login_disabled_app, willstores_ws, request_json, willstores_response_json):
-    with mocker.patch.object(OrderService, "insert", return_value=True):
-        with responses.RequestsMock() as rsps:
-            rsps.add(responses.POST, re.compile(willstores_ws),
-                status=200,
-                json=willstores_response_json
+    mocker.patch.object(OrderService, "insert", return_value=True)
+
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.POST, re.compile(willstores_ws),
+            status=200,
+            json=willstores_response_json
+        )
+
+        with login_disabled_app.test_client() as client:
+            response = client.put(
+                "api/order/insert",
+                json=request_json
             )
 
-            with login_disabled_app.test_client() as client:
-                response = client.put(
-                    "api/order/insert",
-                    json=request_json
-                )
-
-            data = json.loads(response.data)
-            assert data == {}
-            assert response.status_code == 201
+        data = json.loads(response.data)
+        assert data == {}
+        assert response.status_code == 201
 
 
 def test_insert_controller_no_json(login_disabled_app):
@@ -140,24 +141,25 @@ def test_insert_controller_invalid_json(login_disabled_app, request_json):
     ]
 )
 def test_insert_controller_error(mocker, get_request_function, willstores_ws, request_json, willstores_response_json, method, http_method, test_url, error, status_code):
-    with mocker.patch.object(OrderService, method, side_effect=error):
-        with responses.RequestsMock() as rsps:
-            rsps.add(responses.POST, re.compile(willstores_ws),
-                status=200,
-                json=willstores_response_json
-            )
+    mocker.patch.object(OrderService, method, side_effect=error)
 
-            make_request = get_request_function(http_method)
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.POST, re.compile(willstores_ws),
+            status=200,
+            json=willstores_response_json
+        )
 
-            response = make_request(
-                test_url,
-                json=request_json
-            )
+        make_request = get_request_function(http_method)
 
-            data = json.loads(response.data)
-            ErrorSchema().load(data)
+        response = make_request(
+            test_url,
+            json=request_json
+        )
 
-            assert response.status_code == status_code
+        data = json.loads(response.data)
+        ErrorSchema().load(data)
+
+        assert response.status_code == status_code
 
 
 @pytest.mark.parametrize(
@@ -171,20 +173,21 @@ def test_insert_controller_error(mocker, get_request_function, willstores_ws, re
     ]
 )
 def test_insert_controller_http_error(mocker, login_disabled_app, willstores_ws, request_json, json_error_recv, test_url, status_code):
-    with mocker.patch.object(OrderService, "insert", return_value=True):
-        with responses.RequestsMock() as rsps:
-            rsps.add(responses.POST, re.compile(willstores_ws),
-                status=status_code,
-                json=json_error_recv
+    mocker.patch.object(OrderService, "insert", return_value=True)
+
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.POST, re.compile(willstores_ws),
+            status=status_code,
+            json=json_error_recv
+        )
+
+        with login_disabled_app.test_client() as client:
+            response = client.put(
+                test_url,
+                json=request_json
             )
 
-            with login_disabled_app.test_client() as client:
-                response = client.put(
-                    test_url,
-                    json=request_json
-                )
+        data = json.loads(response.data)
+        ErrorSchema().load(data)
 
-            data = json.loads(response.data)
-            ErrorSchema().load(data)
-
-            assert response.status_code == status_code
+        assert response.status_code == status_code

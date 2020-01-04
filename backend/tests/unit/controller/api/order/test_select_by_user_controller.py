@@ -56,60 +56,62 @@ def controller_mocker(mocker):
 def test_select_by_user_slug_controller(mocker, login_disabled_app, willstores_ws, request_json, response_json, willstores_response_json):
     mock_order = MagicMock()
     mock_order.to_dict.return_value = response_json
-    with mocker.patch.object(OrderService, "select_by_user_slug", return_value={"orders": [mock_order, mock_order], "total": 0, "pages": 0}):
-        with responses.RequestsMock() as rsps:
-            rsps.add(responses.POST, re.compile(willstores_ws),
-                status=200,
-                json=willstores_response_json
+    mocker.patch.object(OrderService, "select_by_user_slug", return_value={"orders": [mock_order, mock_order], "total": 0, "pages": 0})
+
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.POST, re.compile(willstores_ws),
+            status=200,
+            json=willstores_response_json
+        )
+
+        with login_disabled_app.test_client() as client:
+            response = client.post(
+                "api/order/user/WILLrogerPEREIRAslugBR"
             )
 
-            with login_disabled_app.test_client() as client:
-                response = client.post(
-                    "api/order/user/WILLrogerPEREIRAslugBR"
-                )
+        data = json.loads(response.data)
+        UserOrdersSchema().load(data)
+        assert response.status_code == 200
+        assert len(data["orders"]) == 2
+        assert data["total"] == 0
+        assert data["pages"] == 0
 
-            data = json.loads(response.data)
-            UserOrdersSchema().load(data)
-            assert response.status_code == 200
-            assert len(data["orders"]) == 2
-            assert data["total"] == 0
-            assert data["pages"] == 0
+        for order in data["orders"]:
+            assert order["slug"] == "slug"
+            assert order["product_types"] == 0
+            assert order["items_amount"] == 0
+            assert order["total"]["outlet"] == 10.55
+            assert order["total"]["retail"] == 20.9
+            assert order["total"]["symbol"] == "£"
 
-            for order in data["orders"]:
-                assert order["slug"] == "slug"
-                assert order["product_types"] == 0
-                assert order["items_amount"] == 0
-                assert order["total"]["outlet"] == 10.55
-                assert order["total"]["retail"] == 20.9
-                assert order["total"]["symbol"] == "£"
+    mocker.patch.object(OrderService, "select_by_user_slug", return_value={"orders": [mock_order], "total": 0, "pages": 0})
 
-    with mocker.patch.object(OrderService, "select_by_user_slug", return_value={"orders": [mock_order], "total": 0, "pages": 0}):
-        with responses.RequestsMock() as rsps:
-            rsps.add(responses.POST, re.compile(willstores_ws),
-                status=200,
-                json=willstores_response_json
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.POST, re.compile(willstores_ws),
+            status=200,
+            json=willstores_response_json
+        )
+
+        with login_disabled_app.test_client() as client:
+            response = client.post(
+                "api/order/user/WILLrogerPEREIRAslugBR",
+                json=request_json
             )
 
-            with login_disabled_app.test_client() as client:
-                response = client.post(
-                    "api/order/user/WILLrogerPEREIRAslugBR",
-                    json=request_json
-                )
+        data = json.loads(response.data)
+        UserOrdersSchema().load(data)
+        assert response.status_code == 200
+        assert len(data["orders"]) == 1
+        assert data["total"] == 0
+        assert data["pages"] == 0
 
-            data = json.loads(response.data)
-            UserOrdersSchema().load(data)
-            assert response.status_code == 200
-            assert len(data["orders"]) == 1
-            assert data["total"] == 0
-            assert data["pages"] == 0
-
-            for order in data["orders"]:
-                assert order["slug"] == "slug"
-                assert order["product_types"] == 0
-                assert order["items_amount"] == 0
-                assert order["total"]["outlet"] == 10.55
-                assert order["total"]["retail"] == 20.9
-                assert order["total"]["symbol"] == "£"
+        for order in data["orders"]:
+            assert order["slug"] == "slug"
+            assert order["product_types"] == 0
+            assert order["items_amount"] == 0
+            assert order["total"]["outlet"] == 10.55
+            assert order["total"]["retail"] == 20.9
+            assert order["total"]["symbol"] == "£"
 
 
 def test_select_by_user_slug_controller_invalid_slug(login_disabled_app):
@@ -209,21 +211,22 @@ def test_select_by_user_slug_controller_invalid_json(login_disabled_app, request
     ]
 )
 def test_select_by_user_slug_controller_error(mocker, get_request_function, method, http_method, test_url, error, status_code):
-    with mocker.patch.object(OrderService, method, side_effect=error):
-        make_request = get_request_function(http_method)
+    mocker.patch.object(OrderService, method, side_effect=error)
 
-        response = make_request(
-            test_url
-        )
+    make_request = get_request_function(http_method)
 
-        if status_code == 204:
-            with pytest.raises(JSONDecodeError):
-                json.loads(response.data)
-        else:
-            data = json.loads(response.data)
-            ErrorSchema().load(data)
+    response = make_request(
+        test_url
+    )
 
-        assert response.status_code == status_code
+    if status_code == 204:
+        with pytest.raises(JSONDecodeError):
+            json.loads(response.data)
+    else:
+        data = json.loads(response.data)
+        ErrorSchema().load(data)
+
+    assert response.status_code == status_code
 
 
 @pytest.mark.parametrize(
@@ -237,19 +240,20 @@ def test_select_by_user_slug_controller_error(mocker, get_request_function, meth
     ]
 )
 def test_select_by_user_slug_controller_http_error(mocker, login_disabled_app, willstores_ws, json_error_recv, test_url, status_code):
-    with mocker.patch.object(OrderService, "select_by_user_slug", return_value={"orders": [MagicMock()], "total": 0, "pages": 0}):
-        with responses.RequestsMock() as rsps:
-            rsps.add(responses.POST, re.compile(willstores_ws),
-                status=status_code,
-                json=json_error_recv
+    mocker.patch.object(OrderService, "select_by_user_slug", return_value={"orders": [MagicMock()], "total": 0, "pages": 0})
+
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.POST, re.compile(willstores_ws),
+            status=status_code,
+            json=json_error_recv
+        )
+
+        with login_disabled_app.test_client() as client:
+            response = client.post(
+                test_url
             )
 
-            with login_disabled_app.test_client() as client:
-                response = client.post(
-                    test_url
-                )
+        data = json.loads(response.data)
+        ErrorSchema().load(data)
 
-            data = json.loads(response.data)
-            ErrorSchema().load(data)
-
-            assert response.status_code == status_code
+        assert response.status_code == status_code

@@ -20,7 +20,7 @@ def test_delete(domain_url, db_perm_session, token_session, prod_list):
     obj = OrderFactory.create(user_slug=user_slug)
     db_perm_session.commit()
 
-    slug = obj.uuid_slug
+    order_slug = obj.uuid_slug
     prod_id_list = [p.meta["id"] for p in prod_list]
 
     for es_id in prod_id_list:
@@ -33,8 +33,21 @@ def test_delete(domain_url, db_perm_session, token_session, prod_list):
     assert len(db_perm_session.query(Product).all()) == 5
     assert len(db_perm_session.query(OrderProduct).all()) == 5
 
+    fake_user_slug = uuid_to_slug(uuid4())
+
     response = token_session.delete(
-        domain_url + "/api/order/delete/%s" % slug
+        domain_url + "/api/order/delete/%s/%s" % (fake_user_slug, order_slug)
+    )
+
+    data = response.json()
+    assert data == {}
+    assert response.status_code == 404
+    assert len(db_perm_session.query(Order).all()) == 1
+    assert len(db_perm_session.query(Product).all()) == 5
+    assert len(db_perm_session.query(OrderProduct).all()) == 5
+
+    response = token_session.delete(
+        domain_url + "/api/order/delete/%s/%s" % (user_slug, order_slug)
     )
 
     data = response.json()
@@ -45,7 +58,7 @@ def test_delete(domain_url, db_perm_session, token_session, prod_list):
     assert len(db_perm_session.query(OrderProduct).all()) == 0
 
     response = token_session.delete(
-        domain_url + "/api/order/delete/%s" % slug
+        domain_url + "/api/order/delete/%s/%s" % (user_slug, order_slug)
     )
 
     data = response.json()
@@ -58,7 +71,7 @@ def test_delete(domain_url, db_perm_session, token_session, prod_list):
 
 def test_delete_unauthorized(domain_url):
     response = requests.delete(
-        domain_url + "/api/order/delete/WILLrogerPEREIRAslugBR",
+        domain_url + "/api/order/delete/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR",
     )
 
     data = response.json()

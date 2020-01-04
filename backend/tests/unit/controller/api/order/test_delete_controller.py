@@ -15,21 +15,32 @@ def controller_mocker(mocker):
 
 
 def test_delete_controller(mocker, login_disabled_app):
-    with mocker.patch.object(OrderService, "delete", return_value=True):
-        with login_disabled_app.test_client() as client:
-            response = client.delete(
-                "api/order/delete/WILLrogerPEREIRAslugBR"
-            )
+    mocker.patch.object(OrderService, "delete", return_value=True)
 
-            data = json.loads(response.data)
-            assert data == {}
-            assert response.status_code == 200
+    with login_disabled_app.test_client() as client:
+        response = client.delete(
+            "api/order/delete/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR"
+        )
+
+        data = json.loads(response.data)
+        assert data == {}
+        assert response.status_code == 200
 
 
 def test_delete_controller_invalid_slug(login_disabled_app):
     with login_disabled_app.test_client() as client:
         response = client.delete(
-            "api/order/delete/invalidslug"
+            "api/order/delete/invalidslug/WILLrogerPEREIRAslugBR"
+        )
+
+    data = json.loads(response.data)
+    ErrorSchema().load(data)
+
+    assert response.status_code == 400
+
+    with login_disabled_app.test_client() as client:
+        response = client.delete(
+            "api/order/delete/WILLrogerPEREIRAslugBR/invalidslug"
         )
 
     data = json.loads(response.data)
@@ -41,27 +52,28 @@ def test_delete_controller_invalid_slug(login_disabled_app):
 @pytest.mark.parametrize(
     "method,http_method,test_url,error,status_code",
     [
-        ("delete", "DELETE", "api/order/delete/WILLrogerPEREIRAslugBR", HTTPException(), 400),
-        ("delete", "DELETE", "api/order/delete/WILLrogerPEREIRAslugBR", NotFoundError(), 404),
-        ("delete", "DELETE", "api/order/delete/WILLrogerPEREIRAslugBR", ConnectionError(), 502),
-        ("delete", "DELETE", "api/order/delete/WILLrogerPEREIRAslugBR", DatabaseError("statement", "params", "orig"), 400),
-        ("delete", "DELETE", "api/order/delete/WILLrogerPEREIRAslugBR", SQLAlchemyError(), 504),
-        ("delete", "DELETE", "api/order/delete/WILLrogerPEREIRAslugBR", Exception(), 500)
+        ("delete", "DELETE", "api/order/delete/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR", HTTPException(), 400),
+        ("delete", "DELETE", "api/order/delete/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR", NotFoundError(), 404),
+        ("delete", "DELETE", "api/order/delete/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR", ConnectionError(), 502),
+        ("delete", "DELETE", "api/order/delete/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR", DatabaseError("statement", "params", "orig"), 400),
+        ("delete", "DELETE", "api/order/delete/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR", SQLAlchemyError(), 504),
+        ("delete", "DELETE", "api/order/delete/WILLrogerPEREIRAslugBR/WILLrogerPEREIRAslugBR", Exception(), 500)
     ]
 )
 def test_delete_controller_error(mocker, get_request_function, method, http_method, test_url, error, status_code):
-    with mocker.patch.object(OrderService, method, side_effect=error):
-        make_request = get_request_function(http_method)
+    mocker.patch.object(OrderService, method, side_effect=error)
 
-        response = make_request(
-            test_url
-        )
+    make_request = get_request_function(http_method)
 
-        data = json.loads(response.data)
+    response = make_request(
+        test_url
+    )
 
-        if status_code == 404:
-            assert data == {}
-        else:
-            ErrorSchema().load(data)
+    data = json.loads(response.data)
 
-        assert response.status_code == status_code
+    if status_code == 404:
+        assert data == {}
+    else:
+        ErrorSchema().load(data)
+
+    assert response.status_code == status_code
